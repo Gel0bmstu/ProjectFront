@@ -11,10 +11,6 @@ const server = http.createServer((req, res) => {
 			console.log("err, try to open", filename,  "file: ", err);
 			const jsFile = fs.readFileSync(`./public/index.html`, {encoding: 'utf8'}, (err, body))
 
-			if (err) {
-				console.log(err);
-			}
-
 			res.write(jsFile);
 			res.end();
 

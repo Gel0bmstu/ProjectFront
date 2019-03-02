@@ -9,16 +9,17 @@ const menuItems = {
 };
 
 const app = document.getElementById('application');
-
-const title = document.createElement('h1');
-title.textContent = 'ВСЕМ МОИМ БРАТЬЯМ САЛАААААААААААААААААМ';
-title.className = 'title';
-title.id = 'id';
-app.appendChild(title);
-
 const block = document.createElement('div');
 block.className = 'menuBlock';
 app.appendChild(block);
+
+function createTitle(object) {
+	const title = document.createElement('h1');
+	title.textContent = 'ВСЕМ МОИМ БРАТЬЯМ САЛАААААААААААААААААМ';
+	title.className = 'title';
+
+	object.appendChild(title);
+}
 
 function createButton(object, text) {
 	const btn = document.createElement('button');
@@ -27,26 +28,44 @@ function createButton(object, text) {
 	object.append(btn);
 }
 
-function createMenu(map) {
-	Object.keys(map).forEach( (key) => {
+function createMenu() {
+	block.innerHTML = '';
+	createTitle(block);	
+	Object.keys(menuItems).forEach( (key) => {
 		createButton(block, key);
 	});
 }	
 
-createMenu(menuItems);
-
-
-const loginLink = document.querySelector('[data-section = "login"]');
-loginLink.addEventListener('click', () => {
-	console.log('HELLO');
+function createLogin() {
 	block.innerHTML = '';
-	createButton(block, 'newButton');
-	createButton(block, 'back');
+	createButton(block, 'manipulation');
+	createButton(block, 'back')
+}
+
+function back() {
+	createMenu();
+}
+
+createMenu();
+
+
+const functions = {
+	menu: createMenu, 
+	title: createTitle,
+	// signup: createSignup,
+	login: createLogin,
+	back: back
+	// game: createGame,
+	// leaderboard: createLeaderboard,
+	// about: createAbout
+};
+
+app.addEventListener('click', (evt) => {
+	evt.preventDefault();
+
+	const target = evt.target;
+
+	const section = target.dataset.section;
+
+	functions[section]();
 });
-
-const backLink = document.querySelector('[data-section = "back"]');
-backLink.addEventListener('click', () =>{
-	console.log('BACK');
-	block.innerHTML = '';
-	createMenu(menuItems);
-})
