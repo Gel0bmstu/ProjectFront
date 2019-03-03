@@ -5,7 +5,8 @@ const menuItems = {
 	login: 'Логин',
 	game: 'Играть',
 	leaderboard: 'Таблица лидеров',
-	about: 'О приложении'
+	about: 'О приложении',
+	profile: 'Профайл',
 };
 
 // const head = document.getElementsByTagName('head');
@@ -25,6 +26,31 @@ app.appendChild(side);
 const main = document.createElement('div');
 main.className = "main";
 app.appendChild(main);
+
+// Вызывается функциями login, signUp и тд для общения с сервером
+function ajax (callback, method, path, body) {
+	const xhr = new XMLHttpRequest();
+	xhr.open(method, path, true);
+	xhr.withCredentials = true;
+
+	if (body) {
+		xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+	}
+
+	xhr.onreadystatechange = function () {
+		if (xhr.readyState !== 4) {
+			return;
+		}
+
+		callback(xhr);
+	};
+
+	if (body) {
+		xhr.send(JSON.stringify(body));
+	} else {
+		xhr.send();
+	}
+}
 
 // Вспомогательные функции (их и будем писать/исправлять/дополнять)
 function createTitle(text) {
@@ -54,6 +80,17 @@ function createForm(object, sectionName, className, formAction) {
 	object.append(form);
 }
 
+function createinput(object, name, type, placeholder, className) {
+	const input = document.createElement('input');
+
+	input.name = name;
+	input.type = type;
+	input.placeholder = placeholder;
+	input.className = className;
+
+	object.appendChild(input);
+}
+
 // Основные функции, отвечают за логику работы фронта/генерирование контента и тд
 function createMenu() {
 	main.innerHTML = '';
@@ -73,27 +110,190 @@ function createMenu() {
 	Object.keys(menuItems).forEach( (key) => {
 		createButton(menu, key, 'btn');
 	});
-}	
+}
 
 function createLogin() {
 	main.innerHTML = '';
 
-	createTitle('Login')
+	createTitle('Login');
 
-	const menu = document.createElement('div');
-	menu.className = 'menu';
-	main.appendChild(menu);
+	const signInSection = document.createElement('section');
+	signInSection.className = 'menu';
+	signInSection.dataset.sectionName = 'login';
 
-	createForm(menu, 'loginForm', 'loginForm form', 'login');
-	createForm(menu, 'passForm', 'passForm form', 'pass');
-	createButton(menu, 'submit', 'submit btn');
-	createButton(menu, 'menu', 'menu btn');
+	const form = document.createElement('form');
 
+	const inputs = [
+		{
+			name: 'email',
+			type: 'email',
+			placeholder: 'Email',
+			className: 'loginForm form'
+		},
+		{
+			name: 'password',
+			type: 'password',
+			placeholder: 'Password',
+			className: 'passForm form'
+		},
+		{
+			name: 'submit',
+			type: 'submit',
+			className: 'submit btn'
+		}
+	];
 
+	inputs.forEach(function (item) {
+		createinput(form, 
+			item.name,
+			item.type, 
+			item.placeholder, 
+			item.className
+		);
+	});
+
+	signInSection.appendChild(form);
+
+	form.addEventListener('submit', function(event) {
+		event.preventDefault();
+
+		const email = form.elements[ 'email' ].value;
+		const password = form.elements[ 'password' ].value;
+
+		ajax(function(xhr) {
+			main.innerHTML = '';
+			createProfile();
+		}, 'POST', '/login', {
+			email: email,
+			password: password
+		});
+	});
+
+	main.appendChild(signInSection);
+	createButton(form, 'menu', 'menu btn');
 }
 
 function createSignup() {
-	
+	main.innerHTML = '';
+
+	createTitle('Sign Up');
+
+	const signUpSection = document.createElement('section');
+	signUpSection.className = 'menu';	
+	signUpSection.dataset.sectionName = 'sign_up';
+
+	const form = document.createElement('form');
+
+	const inputs = [
+		{
+			name: 'email',
+			type: 'email',
+			placeholder: 'Email',
+			className: 'loginForm form'
+		},
+		{
+			name: 'age',
+			type: 'number',
+			placeholder: 'Your Age',
+			className: 'ageForm form'
+		},
+		{
+			name: 'password',
+			type: 'password',
+			placeholder: 'Password',
+			className: 'passForm form'
+		},
+		{
+			name: 'password_repeat',
+			type: 'password',
+			placeholder: 'Repeat Password',
+			className: 'passForm form'
+		},
+		{
+			name: 'submit',
+			type: 'submit',
+			className: 'submit btn'
+		}
+	];
+
+	inputs.forEach(function (item) {
+		createinput(form,
+			item.name,
+			item.type, 
+			item.placeholder, 
+			item.className
+		);
+	});
+
+	signUpSection.appendChild(form);
+
+	form.addEventListener('submit', function (event) {
+		event.preventDefault();
+
+		const email = form.elements[ 'email' ].value;
+		const age = parseInt(form.elements[ 'age' ].value);
+		const password = form.elements[ 'password' ].value;
+		const password_repeat = form.elements[ 'password_repeat' ].value;
+
+		if (password !== password_repeat) {
+			alert('Passwords is not equals');
+
+			return;
+		}
+
+		ajax(function (xhr) {
+			main.innerHTML = '';
+			createProfile();
+		}, 'POST', '/signup', {
+			email: email,
+			age: age,
+			password: password
+		});
+	});
+
+	main.appendChild(signUpSection);
+	createButton(form, 'menu', 'menu btn');
+}
+
+function createProfile(me) {
+	const profileSection = document.createElement('section');
+	profileSection.className = 'menu';
+	profileSection.dataset.section = 'profile';
+
+	createTitle("Profile");
+
+	if (me) {
+		const menu = document.createElement('div');
+		menu.className = 'menu';
+
+		const div1 = document.createElement('div');
+		div1.textContent = `Email ${me.email}`;
+		const div2 = document.createElement('div');
+		div2.textContent = `Age ${me.age}`;
+		const div3 = document.createElement('div');
+		div3.textContent = `Score ${me.score}`;
+		
+		menu.appendChild(div1);
+		menu.appendChild(div2);
+		menu.appendChild(div3);
+
+		profileSection.appendChild(menu);
+	} else {
+		ajax(function(xhr) {
+			if (!xhr.responseText) {
+				alert('Unauthorized');
+				main.innerHTML = '';
+				createMenu();
+				return;
+			}
+
+			const user = JSON.parse(xhr.responseText);
+			main.innerHTML = '';
+			createProfile(user);;
+		}, 'GET', '/me')
+	}
+
+	main.appendChild(profileSection);
 }
 
 function createGame() {
@@ -143,6 +343,7 @@ const functions = {
 	signup: createSignup,
 	login: createLogin,
 	game: createGame,
+	profile: createProfile,
 	// leaderboard: createLeaderboard,
 	// about: createAbout,
 
