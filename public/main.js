@@ -1,5 +1,7 @@
 console.log("hello world");
 
+const {AjaxModule} = window;
+
 const menuItems = {
 	signup: 'Регистрация',
 	login: 'Логин',
@@ -26,31 +28,6 @@ app.appendChild(side);
 const main = document.createElement('div');
 main.className = "main";
 app.appendChild(main);
-
-// Вызывается функциями login, signUp и тд для общения с сервером
-function ajax (callback, method, path, body) {
-	const xhr = new XMLHttpRequest();
-	xhr.open(method, path, true);
-	xhr.withCredentials = true;
-
-	if (body) {
-		xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-	}
-
-	xhr.onreadystatechange = function () {
-		if (xhr.readyState !== 4) {
-			return;
-		}
-
-		callback(xhr);
-	};
-
-	if (body) {
-		xhr.send(JSON.stringify(body));
-	} else {
-		xhr.send();
-	}
-}
 
 // Вспомогательные функции (их и будем писать/исправлять/дополнять)
 function createTitle(text) {
@@ -160,12 +137,16 @@ function createLogin() {
 		const email = form.elements[ 'email' ].value;
 		const password = form.elements[ 'password' ].value;
 
-		ajax(function(xhr) {
-			main.innerHTML = '';
-			createProfile();
-		}, 'POST', '/login', {
-			email: email,
-			password: password
+		AjaxModule.doPost({
+			callback() {
+				main.innerHTML = '';
+				createProfile();					
+			},
+			path: '/login',
+			body: {
+				email: email,
+				password: password
+			}
 		});
 	});
 
@@ -241,13 +222,17 @@ function createSignup() {
 			return;
 		}
 
-		ajax(function (xhr) {
-			main.innerHTML = '';
-			createProfile();
-		}, 'POST', '/signup', {
-			email: email,
-			age: age,
-			password: password
+		AjaxModule.doPost({
+			callback() {
+				main.innerHTML = '';
+				createProfile();					
+			},
+			path: '/signup',
+			body: {
+				email: email,
+				age: age,
+				password: password
+			}
 		});
 	});
 
@@ -279,18 +264,21 @@ function createProfile(me) {
 
 		profileSection.appendChild(menu);
 	} else {
-		ajax(function(xhr) {
-			if (!xhr.responseText) {
-				alert('Unauthorized');
-				main.innerHTML = '';
-				createMenu();
-				return;
-			}
+		AjaxModule.doGet({
+			callback(xhr) {
+				if (!xhr.responseText) {
+					alert('Unauthorized');
+					main.innerHTML = '';
+					createMenu();
+					return;
+				}
 
-			const user = JSON.parse(xhr.responseText);
-			main.innerHTML = '';
-			createProfile(user);;
-		}, 'GET', '/me')
+				const user = JSON.parse(xhr.responseText);
+				main.innerHTML = '';
+				createProfile(user);;			
+			},
+			path: '/me'
+		});
 	}
 
 	main.appendChild(profileSection);
