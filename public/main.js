@@ -212,15 +212,13 @@ function createLogin() {
 
 	signInSection.appendChild(form);
 
-<<<<<<< HEAD
 	createForm(menu, 'loginForm', 'loginForm form', 'login');
 	createForm(menu, 'passForm', 'passForm form', 'pass');
 	createButton(menu, 'submit', 'submit btn', 'Submit');
 	createButton(menu, 'menu', 'menu btn', 'Back');
-=======
+
 	form.addEventListener('submit', function(event) {
 		event.preventDefault();
->>>>>>> 6410755db89bd5796f9521230ee6d5db6535d425
 
 		const email = form.elements[ 'email' ].value;
 		const password = form.elements[ 'password' ].value;
@@ -473,12 +471,7 @@ const functions = {
 	signup: createSignup,
 	login: createLogin,
 	game: createGame,
-<<<<<<< HEAD
 	leaderboard: createLeaderboard,
-=======
-	profile: createProfile,
-	// leaderboard: createLeaderboard,
->>>>>>> 6410755db89bd5796f9521230ee6d5db6535d425
 	// about: createAbout,
 
 	// Other functions
