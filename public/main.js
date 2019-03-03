@@ -1,4 +1,4 @@
-console.log("hello world");
+console.log("Server started");
 
 const menuItems = {
 	signup: 'Регистрация',
@@ -7,6 +7,62 @@ const menuItems = {
 	leaderboard: 'Таблица лидеров',
 	about: 'О приложении'
 };
+
+const users = {
+	'a.ostapenko@corp.mail.ru': {
+		email: 'a.ostapenko@corp.mail.ru',
+		password: 'password',
+		age: 21,
+		score: 72,
+	},
+	'd.dorofeev@corp.mail.ru': {
+		email: 'd.dorofeev@corp.mail.ru',
+		password: 'password',
+		age: 21,
+		score: 100500,
+	},
+	's.volodin@corp.mail.ru': {
+		email: 'marina.titova@corp.mail.ru',
+		password: 'password',
+		age: 21,
+		score: 72,
+	},
+	'a.tyuldyukov@corp.mail.ru': {
+		email: 'a.tyuldyukov@corp.mail.ru',
+		password: 'password',
+		age: 21,
+		score: 72,
+	},
+};
+
+// const users = {
+// 	firstUser: "Fread",
+// 	secondUser: "Jhon"
+// };
+
+function ajax (callback, method, path, body) {
+	const xhr = new XMLHttpRequest();
+	xhr.open(method, path, true);
+	xhr.withCredentials = true;
+
+	if (body) {
+		xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+	}
+
+	xhr.onreadystatechange = function () {
+		if (xhr.readyState !== 4) {
+			return;
+		}
+
+		callback(xhr);
+	};
+
+	if (body) {
+		xhr.send(JSON.stringify(body));
+	} else {
+		xhr.send();
+	}
+}
 
 // const head = document.getElementsByTagName('head');
 // const body = document.getElementsByTagName('body');
@@ -37,12 +93,14 @@ function createTitle(text) {
 	title.appendChild(title_txt);
 }
 
-function createButton(object, sectionName, className) {
+// Объеект, к которому добавится кнопка; sectionName, className, Текст кнопки
+function createButton(object, sectionName, className, textContent) {
 	const btn = document.createElement('button');
 	btn.dataset.section = sectionName;
 	btn.textContent = sectionName;
 	btn.className = className;
-	object.append(btn);
+	btn.textContent = textContent;
+	object.appendChild(btn);
 }
 
 function createForm(object, sectionName, className, formAction) {
@@ -70,8 +128,8 @@ function createMenu() {
 	// poka hz kak eto
 	header.appendChild(menuStyle);
 
-	Object.keys(menuItems).forEach( (key) => {
-		createButton(menu, key, 'btn');
+	Object.keys(menuItems).forEach( (key, value) => {
+		createButton(menu, key, 'btn', menuItems[key]);
 	});
 }	
 
@@ -86,8 +144,8 @@ function createLogin() {
 
 	createForm(menu, 'loginForm', 'loginForm form', 'login');
 	createForm(menu, 'passForm', 'passForm form', 'pass');
-	createButton(menu, 'submit', 'submit btn');
-	createButton(menu, 'menu', 'menu btn');
+	createButton(menu, 'submit', 'submit btn', 'Submit');
+	createButton(menu, 'menu', 'menu btn', 'Back');
 
 
 }
@@ -117,14 +175,79 @@ function createGame() {
 	const gameLogic = document.createElement('script');
 	gameLogic.id = "gamejs";
 	gameLogic.src = '/game.js'
-	menu.appendChild(gameLogic);
+	main.appendChild(gameLogic);
 
-	createButton(menu, 'menu', 'btn');
+	createButton(menu, 'menu', 'btn', 'Back');
 }
 
-// Заглушки, можешь сделать их, если хочешь
-function leaderboard() {
+function createLeaderboard() {
+	main.innerHTML = '';
+	createTitle('Leaderboard');
 
+	const leaderboard = document.createElement('div');
+	leaderboard.dataset.section = 'leaderboard';
+	leaderboard.className = 'menu';
+
+	if (users) {
+		const table = document.createElement('table');
+		const thead = document.createElement('thead');
+		thead.innerHTML = `
+		<tr>
+			<th>Email</th>
+			<th>Age</th>
+			<th>Score</th>
+		</th>
+		`;
+		const tbody = document.createElement('tbody');
+
+		table.appendChild(thead);
+		table.appendChild(tbody);
+		table.border = 1;
+		table.cellSpacing = table.cellPadding = 0;
+
+		console.log('Перед forEach');
+
+		for (let key in users) {
+			const email = users[key].email;
+			const age = users[key].age;
+			const score = users[key].score;
+
+			console.log(email, age, score);
+
+			const tr = document.createElement('tr');
+			const tdEmail = document.createElement('td');
+			const tdAge = document.createElement('td');
+			const tdScore = document.createElement('td');
+
+			tdEmail.textContent = email;
+			tdAge.textContent = age;
+			tdScore.textContent = score;
+
+			tr.appendChild(tdEmail);
+			tr.appendChild(tdAge);
+			tr.appendChild(tdScore);
+
+			tbody.appendChild(tr);
+
+			leaderboard.appendChild(table);
+		};
+	};
+	main.appendChild(leaderboard);
+
+	alert('vishli iz if');
+	// else {
+	// 	const em = document.createElement('em');
+	// 	em.textContent = 'Loading';
+	// 	leaderboard.appendChild(em);
+
+	// 	ajax(function (xhr) {
+	// 		const users = JSON.parse(xhr.responseText);
+	// 		application.innerHTML = '';
+	// 		createLeaderboard(users);
+	// 	}, 'GET', '/users');
+	// }
+
+	createButton(leaderboard, 'menu', 'btn', 'Back');
 }
 
 function createAbout() {
@@ -143,7 +266,7 @@ const functions = {
 	signup: createSignup,
 	login: createLogin,
 	game: createGame,
-	// leaderboard: createLeaderboard,
+	leaderboard: createLeaderboard,
 	// about: createAbout,
 
 	// Other functions
@@ -155,7 +278,9 @@ app.addEventListener('click', (evt) => {
 
 	const target = evt.target;
 
-	if (target instanceof HTMLButtonElement) {	
+	// Если target является кнопкой 
+	if (target instanceof HTMLButtonElement) {
+		// Убираем все стандартные обработчики	
 		evt.preventDefault();
 
 		const section = target.dataset.section;
